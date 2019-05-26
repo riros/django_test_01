@@ -94,4 +94,6 @@ Session.vim
 .netrwhist
 
 # Pycharm
-.idea/
+.idea
+
+package-lock.json

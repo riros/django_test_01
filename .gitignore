@@ -97,3 +97,7 @@ Session.vim
 .idea
 
 package-lock.json
+
+.secret.py
+tmp/
+db.sqlite3

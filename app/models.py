@@ -1,10 +1,8 @@
-# from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractUser
 from django.utils.timezone import now
 from django.core.cache import cache
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
-from django.core.exceptions import ValidationError
 from django.db.models import \
     CharField, UUIDField, Model, IntegerField, DateTimeField, \
     BooleanField, ManyToManyField, TextField, EmailField, \
@@ -14,10 +12,9 @@ from django.utils.translation import ugettext_lazy as _
 import uuid
 from django.db.models import Sum
 from django.db.models import Q
-
-from .validators import inn_validator
-
+from .validators import inn_validator, pay_validator
 from django.db import transaction
+from django.conf import settings
 
 
 class BaseModel(Model):
@@ -75,20 +72,14 @@ class CashTransaciton(BaseModel):
         verbose_name = _("currency transfers")
         verbose_name_plural = _("currency transfers")
 
-    def pay_validator(self, val):
-        if val < 0:
-            raise ValidationError(_(f"Credit  {val}<0 "))
-        if self.src.balance < self.val:
-            raise ValidationError(_(f"Not enough user ({self.src.get_full_name()}) money"))
-
     tid = UUIDField(primary_key=False, default=uuid.uuid4,
                     unique=False,  # may be many recipients
                     null=False)
 
     val = FloatField(help_text="currency", validators=[pay_validator],
                      verbose_name="Amount transfer", )
-    src = OneToOneField("EUser", related_name="src_user_id", to_field="id", on_delete=PROTECT, null=True)
-    dst = OneToOneField("EUser", related_name="dst_user_id", to_field="id", on_delete=PROTECT, null=True)
+    src = ForeignKey("EUser", related_name="src_user_id", on_delete=PROTECT, null=True, default=None)
+    dst = ForeignKey("EUser", related_name="dst_user_id", on_delete=PROTECT, null=True, default=None)
     active = BooleanField(verbose_name="Active", help_text="Transaction accepted", default=True)
 
     def __str__(self):
@@ -107,12 +98,15 @@ class CashTransaciton(BaseModel):
 
 
 class EUser(AbstractUser, BaseModel):
-    middle_name = CharField(_('Отчество'), max_length=30, blank=True, null=True)
+    middle_name = CharField(_('Отчество'), max_length=30, blank=True, null=True
+                            )
 
-    inn = CharField(_("INN"), unique=False, blank=False, null=False, validators=[inn_validator], max_length=12)
+    inn = CharField(_("INN"), unique=False, blank=False, null=False, validators=[inn_validator], max_length=12,
+                    help_text="10 or 12 digits")
 
     # кешированное поле
-    cached_balance = FloatField(_('cached balance'), null=True, blank=True, unique=False)
+    cached_balance = FloatField(_('cached balance'), null=True, blank=True, unique=False,
+                                help_text="This field is cache of CashTransactions. Please rebuild.")
 
     @property
     def transactions(self):
@@ -139,13 +133,14 @@ class EUser(AbstractUser, BaseModel):
         return CashTransaciton.objects.filter(dst=self, active=True)
 
     def get_credit(self) -> float:
-        return self.get_credit_transactions().aggregate(Sum('val'))
+        ret = self.get_credit_transactions().aggregate(Sum('val'))['val__sum'] or 0
+        return ret
 
     def get_debt_transactions(self):
         return CashTransaciton.objects.filter(src=self, active=True)
 
     def get_debt(self) -> float:
-        return self.get_debt_transactions().aggregate(Sum('val'))
+        return self.get_debt_transactions().aggregate(Sum('val'))['val__sum'] or 0
 
     def balance_rebuild(self) -> float:
         ret = self.get_credit() - self.get_debt()
@@ -242,21 +237,33 @@ class EUser(AbstractUser, BaseModel):
         return cls._split_name(s, 2)
 
     def __str__(self):
-        return f"{self.last_name} {self.first_name} {self.middle_name}"
+        return f"{self.id} {self.username} {self.email} {self.last_name} {self.first_name} {self.middle_name} {self.cached_balance}"
 
 
 @receiver(pre_save, sender=CashTransaciton)
-def _on_cash_transaction_save(sender, instance: CashTransaciton, **kwargs):
+def _on_cash_transaction_pre_save(sender, instance: CashTransaciton, **kwargs):
+    if instance.src and instance.src.balance < instance.val:
+        raise AssertionError(_(f"Not enough user ({instance.src.get_full_name()}) money"))
+
+    if not instance.src and not instance.dst:
+        raise AssertionError(_(f"no src and no dst. Empty."))
+
     instance.updated_at = now()
 
 
 @receiver(pre_save, sender=EUser)
-def _on_cash_transaction_save(sender, instance: CashTransaciton, **kwargs):
+def _on_user_pre_save(sender, instance: EUser, **kwargs):
     instance.updated_at = now()
 
 
 @receiver(post_save, sender=CashTransaciton)
-def _on_cash_transaction_save(sender, instance: CashTransaciton, **kwargs):
+def _on_cash_transaction_post_save(sender, instance: CashTransaciton, **kwargs):
     if instance.active:
-        cache.delete(instance.src.id)
-        cache.delete(instance.dst.id)
+        if instance.src:
+            cache.delete(instance.src.id)
+        if instance.dst:
+            cache.delete(instance.dst.id)
+
+
+if settings.DEBUG:
+    cache.clear()

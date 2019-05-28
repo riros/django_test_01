@@ -18,12 +18,26 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls import include, url
 
+from rest_framework import routers
+
+from app.views import (
+    EUserViewSet, CashTransactionViewSet
+)
+
+router = routers.DefaultRouter(trailing_slash=False)
+
+router.register(r'users', EUserViewSet)
+router.register(r'cashtransactions', CashTransactionViewSet)
+
 urlpatterns = [
+    url(r'^', include(router.urls)),
     path('admin/', admin.site.urls),
+
 ]
 
 if settings.DEBUG:
     import debug_toolbar
-    urlpatterns = [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+
+urlpatterns = [
+                  url(r'^__debug__/', include(debug_toolbar.urls)),
+              ] + urlpatterns

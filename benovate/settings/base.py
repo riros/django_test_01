@@ -10,7 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
-import os, platform
+import os
+import platform
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +26,8 @@ else:
         from .secret import SECRET_KEY
     except:
         raise Exception("Нужно определить секретный ключ secret.py ")
+INTERNAL_IPS = ('127.0.0.1',)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -40,7 +43,6 @@ ALLOWED_HOSTS = ['*']
 
 LOGOUT_REDIRECT_URL = '/'
 
-
 AUTH_USER_MODEL = 'app.EUser'
 
 # Application definition
@@ -55,6 +57,8 @@ INSTALLED_APPS = [
     'app.apps.AppConfig',
     'rest_framework',
     'debug_toolbar',
+    'django_filters',
+
 ]
 
 MIDDLEWARE = [
@@ -67,6 +71,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
 
 ROOT_URLCONF = 'benovate.urls'
 

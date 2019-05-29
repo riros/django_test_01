@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 import uuid
 from django.db.models import Sum
 from django.db.models import Q
-from .validators import inn_validator, pay_validator
+from .validators import tin_validator, pay_validator
 from django.db import transaction
 from django.conf import settings
 
@@ -101,7 +101,7 @@ class EUser(AbstractUser, BaseModel):
     middle_name = CharField(_('Отчество'), max_length=30, blank=True, null=True
                             )
 
-    inn = CharField(_("INN"), unique=False, blank=False, null=False, validators=[inn_validator], max_length=12,
+    tin = CharField(_("ИНН"), unique=False, blank=False, null=False, validators=[tin_validator], max_length=12,
                     help_text="10 or 12 digits")
 
     # кешированное поле
@@ -178,33 +178,36 @@ class EUser(AbstractUser, BaseModel):
             return False
 
     @transaction.atomic
-    def make_transfer(self, val, user=None, inn: str = None) -> bool:
+    def make_transfer(self, val, user=None, tin: str = None) -> bool:
         """
         Перевод для пользователя, или для нескольких по инн
         :param val:
         :param user:
-        :param inn:
+        :param tin:
         :return:
         """
-        if user is not None and inn is not None:
+        if user is not None and tin is not None:
             raise AssertionError("Недопустимая ситуация, когда при переводе указан пользователь и инн")
         else:
             if user:
                 try:
                     CashTransaciton(val=val, src=self, dst=user).save()
                     return True
+                except AssertionError:
+                    return False
                 except:
                     return False
             else:
-                users = EUser.objects.filter(inn=inn)
+                users = EUser.objects.filter(tin=tin)
                 cnt = len(users)
                 part = round(val / cnt, 2)
                 sid = transaction.savepoint()
                 for u in users:
-                    if not u.make_transfer(part, user=u):
+                    if not self.make_transfer(part, user=u):
                         transaction.savepoint_rollback(sid)
                         return False
                 transaction.savepoint_commit(sid)
+                return True
 
     def get_full_name(self):
         """
@@ -237,7 +240,7 @@ class EUser(AbstractUser, BaseModel):
         return cls._split_name(s, 2)
 
     def __str__(self):
-        return f"{self.id} {self.username} {self.email} {self.last_name} {self.first_name} {self.middle_name} {self.cached_balance}"
+        return f"{self.id} {self.email} {self.username} {self.last_name} {self.first_name} {self.middle_name} {self.cached_balance}"
 
 
 @receiver(pre_save, sender=CashTransaciton)

@@ -16,7 +16,7 @@ class EUserSerializer(serializers.ModelSerializer):
         model = EUser
         fields = ('url',
                   'id',
-                  "inn",
+                  "tin",
                   "balance",
                   'updated_at',
                   'created_at',

@@ -61,8 +61,8 @@ class EUserViewSet(ModelViewSet):
                     else:
                         exceptions.ErrorDetail("Unable transfer money...")
 
-                elif qp.get('tid'):
-                    if eu.make_transfer(qp.get('amount'), inn=qp.get('tid')):
+                elif qp.get('tin'):
+                    if eu.make_transfer(qp.get('amount'), tin=qp.get('tin')):
                         return Response({
                             "result": "ok", "pk": pk,
                         })
@@ -71,7 +71,7 @@ class EUserViewSet(ModelViewSet):
 
                 else:
 
-                    raise exceptions.ValidationError("Не указан ни to_user, ни tid")
+                    raise exceptions.ValidationError("Не указан ни to_user, ни tin")
             else:
                 raise exceptions.ValidationError("Не указано значение amount")
 

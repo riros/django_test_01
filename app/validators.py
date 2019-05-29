@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 
-def inn_validator(inn: AnyStr):
+def tin_validator(inn: AnyStr):
     if len(inn) not in (10, 12):
         raise ValidationError(_(f"tin not 10 and no 12 digits {inn}"))
 

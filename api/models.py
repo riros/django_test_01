@@ -15,6 +15,9 @@ from django.db.models import Q
 from .validators import tin_validator, pay_validator
 from django.db import transaction
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class BaseModel(Model):
@@ -74,16 +77,18 @@ class CashTransaciton(BaseModel):
 
     tid = UUIDField(primary_key=False, default=uuid.uuid4,
                     unique=False,  # may be many recipients
-                    null=False)
+                    null=False, db_index=True)
 
     val = FloatField(help_text="currency", validators=[pay_validator],
                      verbose_name="Amount transfer", )
-    src = ForeignKey("EUser", related_name="src_user_id", on_delete=PROTECT, null=True, default=None)
+    src = ForeignKey("EUser", related_name="src_user_id", on_delete=PROTECT, null=True, default=None, blank=True)
     dst = ForeignKey("EUser", related_name="dst_user_id", on_delete=PROTECT, null=True, default=None)
-    active = BooleanField(verbose_name="Active", help_text="Transaction accepted", default=True)
+    active = BooleanField(verbose_name="Active", db_index=True, help_text="Transaction accepted", default=True)
+
+    # test = IntegerField(verbose_name='test')
 
     def __str__(self):
-        return f"{self.tid} {self.src} to {self.dst} {self.val} {self.active}"
+        return f"tid: {self.tid} src:{self.src} to {self.dst} amount:{self.val} Active:{self.active}"
 
     def activate(self) -> bool:
         raise NotImplementedError("TODO")
@@ -102,10 +107,10 @@ class EUser(AbstractUser, BaseModel):
                             )
 
     tin = CharField(_("ИНН"), unique=False, blank=False, null=False, validators=[tin_validator], max_length=12,
-                    help_text="10 or 12 digits")
+                    help_text="10 or 12 digits", db_index=True)
 
     # кешированное поле
-    cached_balance = FloatField(_('cached balance'), null=True, blank=True, unique=False,
+    cached_balance = FloatField(_('cached balance'), db_index=True, null=True, blank=True, unique=False,
                                 help_text="This field is cache of CashTransactions. Please rebuild.")
 
     @property
@@ -160,7 +165,9 @@ class EUser(AbstractUser, BaseModel):
         :param val:
         :return:
         """
-        t = CashTransaciton(val=val, src=None, dst=self)
+
+        logger.info(f'start EUser:make_reciept +{val}')
+        t = CashTransaciton(val=float(val), src=None, dst=self)
         t.save()
 
     def make_expense(self, val: float) -> bool:
@@ -240,7 +247,10 @@ class EUser(AbstractUser, BaseModel):
         return cls._split_name(s, 2)
 
     def __str__(self):
-        return f"{self.id} {self.email} {self.username} {self.last_name} {self.first_name} {self.middle_name} {self.cached_balance}"
+        return f"{self.username} {self.id} {self.last_name} {self.first_name} {self.middle_name} {self.balance}"
+
+    def __repr__(self):
+        return f" {self.id}: {self.get_full_name()}"
 
 
 @receiver(pre_save, sender=CashTransaciton)

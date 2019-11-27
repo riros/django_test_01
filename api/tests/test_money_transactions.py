@@ -1,8 +1,8 @@
 from django.utils import timezone
 from rest_framework.test import APITestCase
 
-from app.factories import EUserFactory
-from app.models import EUser, CashTransaciton
+from api.factories import EUserFactory
+from api.models import EUser, CashTransaciton
 
 
 class CashTransactionTestCase(APITestCase):

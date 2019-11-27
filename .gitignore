@@ -84,7 +84,7 @@ media/
 provisioner/site.retry
 
 # Virtualenv
-venv/
+*venv*
 
 ### Vim ###
 [._]*.s[a-w][a-z]
@@ -101,3 +101,7 @@ package-lock.json
 .secret.py
 tmp/
 db.sqlite3
+
+logs
+!logs/.keepme
+project/settings/dev.py

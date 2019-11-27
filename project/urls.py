@@ -1,4 +1,4 @@
-"""benovate URL Configuration
+"""URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.2/topics/http/urls/
@@ -20,7 +20,7 @@ from django.conf.urls import include, url
 
 from rest_framework import routers
 
-from app.views import (
+from api.views import (
     EUserViewSet, CashTransactionViewSet
 )
 
@@ -30,10 +30,12 @@ router.register(r'users', EUserViewSet)
 router.register(r'cashtransactions', CashTransactionViewSet)
 
 urlpatterns = [
+
+    url(r'^api-auth', include("rest_framework.urls")),
     url(r'^', include(router.urls)),
     path('admin/', admin.site.urls),
-
 ]
+
 
 if settings.DEBUG:
     import debug_toolbar

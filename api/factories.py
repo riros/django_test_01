@@ -1,7 +1,7 @@
 import factory
 from faker import Factory as FakerFactory
 
-from app.models import (
+from api.models import (
     EUser, CashTransaciton
 )
 

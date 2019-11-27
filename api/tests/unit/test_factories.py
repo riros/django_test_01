@@ -1,7 +1,7 @@
 import pytest
 
-from app.factories import EUserFactory
-from app.models import EUser
+from api.factories import EUserFactory
+from api.models import EUser
 
 pytestmark = pytest.mark.django_db
 

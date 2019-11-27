@@ -2,7 +2,7 @@ import pytest
 from pytest_factoryboy import register
 from rest_framework.test import APIClient
 
-from app.factories import (
+from api.factories import (
     EUserFactory
 )
 
@@ -24,6 +24,7 @@ def multiple_entries(euser_factory, entry_factory):
     # comment_factory(entry=entries[0])
     # comment_factory(entry=entries[1])
     return entries
+
 
 @pytest.fixture
 def client():

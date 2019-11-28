@@ -247,7 +247,7 @@ class EUser(AbstractUser, BaseModel):
         return cls._split_name(s, 2)
 
     def __str__(self):
-        return f"{self.username} {self.id} {self.last_name} {self.first_name} {self.middle_name} {self.balance}"
+        return f"{self.username} : {self.balance} руб."
 
     def __repr__(self):
         return f" {self.id}: {self.get_full_name()}"

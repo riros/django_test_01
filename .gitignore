@@ -101,6 +101,7 @@ package-lock.json
 .secret.py
 tmp/
 db.sqlite3
+static
 
 logs
 !logs/.keepme

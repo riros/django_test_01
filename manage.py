@@ -3,6 +3,8 @@
 import os
 import sys
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')

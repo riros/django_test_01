@@ -1,9 +1,7 @@
 import factory
 from faker import Factory as FakerFactory
 
-from api.models import (
-    EUser, CashTransaciton
-)
+from base.models import EUser
 
 faker = FakerFactory.create()
 faker.seed(983843)

@@ -4,18 +4,14 @@ from rest_framework.request import Request
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
-# from rest_framework_json_api.django_filters import DjangoFilterBackend
-# from rest_framework_json_api.filters import OrderingFilter, QueryParameterValidationFilter
-# from rest_framework_json_api.pagination import JsonApiPageNumberPagination
-# from rest_framework_json_api.views import ModelViewSet
-#
-# from rest_framework_json_api.exceptions import exceptions
-from rest_framework.exceptions import APIException as exceptions
+from rest_framework.exceptions import APIException as MyException
 
-from api.models import *
 from rest_framework.decorators import action
 
-from api.serializers import (
+from base.models import EUser
+from apps.cash.models import CashTransaciton
+
+from apps.api.serializers import (
     EUserSerializer, CashTransactionSerializer
 )
 
@@ -83,7 +79,7 @@ class EUserViewSet(viewsets.ModelViewSet):
                             "result": "ok", "pk": pk,
                         })
                     else:
-                        exceptions("Unable transfer money...")
+                        MyException("Unable transfer money...")
 
                 elif qp.get('tin'):
                     if eu.make_transfer(qp.get('amount'), tin=qp.get('tin')):
@@ -91,13 +87,13 @@ class EUserViewSet(viewsets.ModelViewSet):
                             "result": "ok", "pk": pk,
                         })
                     else:
-                        exceptions("Unable transfer money...")
+                        MyException("Unable transfer money...")
 
                 else:
 
-                    raise exceptions("Не указан ни to_user, ни tin")
+                    raise MyException("Не указан ни to_user, ни tin")
             else:
-                raise exceptions("Не указано значение amount")
+                raise MyException("Не указано значение amount")
 
     @action(detail=True, name='Add cash')
     def add_money(self, request: Request, pk=None):
@@ -117,7 +113,7 @@ class EUserViewSet(viewsets.ModelViewSet):
                     "result": "ok", "pk": pk,
                 })
             else:
-                raise exceptions("Не указано значение amount")
+                raise MyException("Не указано значение amount")
 
 
 class CashTransactionViewSet(viewsets.ModelViewSet):

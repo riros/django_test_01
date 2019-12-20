@@ -1,0 +1,20 @@
+# core
+Django==3.0.1
+#django-debug-toolbar==1.11
+django-filter
+#django-polymorphic==2.0.3
+djangorestframework
+markdown
+psycopg2
+
+# test
+factory-boy
+Faker
+#pytest
+#pytest-flake8
+#pytest-factoryboy
+
+
+flake8
+tox
+coverage

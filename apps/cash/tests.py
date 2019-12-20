@@ -1,16 +1,17 @@
-from django.utils import timezone
-from rest_framework.test import APITestCase
+from django.test import TestCase, tag
 
-from api.factories import EUserFactory
-from api.models import EUser, CashTransaciton
+from apps.api.factories import EUserFactory
+from base.models import EUser
+from apps.cash.models import CashTransaciton
 
 
-class CashTransactionTestCase(APITestCase):
+class CashTransactionTestCase(TestCase):
     def setUp(self):
         self.user_src: EUser = EUserFactory(username="testsrc", tin="0")
         self.user_dst1: EUser = EUserFactory(username="testdst1", tin="1")
         self.user_dst2: EUser = EUserFactory(username="testdst2", tin="1")
 
+    @tag("Финансовые операции")
     def test_cash_transfers(self):
         self.cash_credit = CashTransaciton.objects.create(
             val=125,

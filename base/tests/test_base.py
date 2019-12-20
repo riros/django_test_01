@@ -1,10 +1,9 @@
 from django.test import TestCase
-
 from django.contrib.auth import get_user_model
-from rest_framework.test import APITestCase
+from base.models import BaseModel
 
 
-class TestBase(APITestCase):
+class BaseTestCase(TestCase):
     """
     Test base class to setup a couple users.
     """
@@ -13,10 +12,10 @@ class TestBase(APITestCase):
         """
         Create those users
         """
-        super(TestBase, self).setUp()
-        self.create_users()
+        super(BaseTestCase, self).setUp()
 
-    def create_user(self, username, email, password="pw",
+    @staticmethod
+    def create_user(username, email, password="pw",
                     first_name='', last_name=''):
         """
         Helper method to create a user
@@ -31,7 +30,7 @@ class TestBase(APITestCase):
             user.save()
         return user
 
-    def create_users(self):
+    def test_create_users(self):
         """
         Create a couple users
         """
@@ -41,3 +40,5 @@ class TestBase(APITestCase):
         self.miles = self.create_user(
             'miles', 'miles@example.com',
             first_name="Miles", last_name="Davis")
+        self.assertEqual(True, issubclass(self.miles.__class__, BaseModel))
+        self.assertEqual(True, issubclass(self.john.__class__, BaseModel))

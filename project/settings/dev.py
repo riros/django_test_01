@@ -1,5 +1,6 @@
 INTERNAL_IPS = ('127.0.0.1',)
-DEBUG = False
+DEBUG = True
+ALLOWED_HOSTS = ['*']
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

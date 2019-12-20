@@ -1,4 +1,5 @@
 from django.contrib.auth.models import BaseUserManager, AbstractUser
+
 from django.utils.timezone import now
 from django.core.cache import cache
 from django.dispatch import receiver
@@ -9,25 +10,18 @@ from django.db.models import \
     ForeignKey, FloatField, OneToOneRel, PROTECT, OneToOneField, ManyToOneRel
 
 from django.utils.translation import ugettext_lazy as _
-import uuid
 from django.db.models import Sum
 from django.db.models import Q
-from .validators import tin_validator, pay_validator
+
+from apps.cash.validators import tin_validator
 from django.db import transaction
-from django.conf import settings
 import logging
 
+from base.basemodel import BaseModel
+
+from apps.cash.models import CashTransaciton
+
 logger = logging.getLogger(__name__)
-
-
-class BaseModel(Model):
-    class Meta:
-        abstract = True
-
-    id = UUIDField(db_column='Id', primary_key=True, default=uuid.uuid4)
-
-    created_at = DateTimeField(auto_now_add=True)
-    updated_at = DateTimeField(auto_now=True)
 
 
 class EUserManager(BaseUserManager):
@@ -68,38 +62,6 @@ class EUserManager(BaseUserManager):
         user.is_admin = True
         user.save(using=self._db)
         return user
-
-
-class CashTransaciton(BaseModel):
-    class Meta:
-        verbose_name = _("currency transfers")
-        verbose_name_plural = _("currency transfers")
-
-    tid = UUIDField(primary_key=False, default=uuid.uuid4,
-                    unique=False,  # may be many recipients
-                    null=False, db_index=True)
-
-    val = FloatField(help_text="currency", validators=[pay_validator],
-                     verbose_name="Amount transfer", )
-    src = ForeignKey("EUser", related_name="src_user_id", on_delete=PROTECT, null=True, default=None, blank=True)
-    dst = ForeignKey("EUser", related_name="dst_user_id", on_delete=PROTECT, null=True, default=None)
-    active = BooleanField(verbose_name="Active", db_index=True, help_text="Transaction accepted", default=True)
-
-    # test = IntegerField(verbose_name='test')
-
-    def __str__(self):
-        return f"tid: {self.tid} src:{self.src} to {self.dst} amount:{self.val} Active:{self.active}"
-
-    def activate(self) -> bool:
-        raise NotImplementedError("TODO")
-
-    def deactivate(self) -> bool:
-        # Распроведение одиночной транзакции
-        raise NotImplementedError("TODO")
-
-    def deactivate_cascade(self):
-        # Каскадное распроведение переводов
-        raise NotImplementedError("TODO")
 
 
 class EUser(AbstractUser, BaseModel):
@@ -202,7 +164,7 @@ class EUser(AbstractUser, BaseModel):
                     return True
                 except AssertionError:
                     return False
-                except:
+                except _:
                     return False
             else:
                 users = EUser.objects.filter(tin=tin)
@@ -230,7 +192,7 @@ class EUser(AbstractUser, BaseModel):
         spl = s.split(' ')
         try:
             ret = spl[i]
-        except Exception:
+        except _:
             ret = None
         return ret
 
@@ -253,30 +215,6 @@ class EUser(AbstractUser, BaseModel):
         return f" {self.id}: {self.get_full_name()}"
 
 
-@receiver(pre_save, sender=CashTransaciton)
-def _on_cash_transaction_pre_save(sender, instance: CashTransaciton, **kwargs):
-    if instance.src and instance.src.balance < instance.val:
-        raise AssertionError(_(f"Not enough user ({instance.src.get_full_name()}) money"))
-
-    if not instance.src and not instance.dst:
-        raise AssertionError(_(f"no src and no dst. Empty."))
-
-    instance.updated_at = now()
-
-
 @receiver(pre_save, sender=EUser)
 def _on_user_pre_save(sender, instance: EUser, **kwargs):
     instance.updated_at = now()
-
-
-@receiver(post_save, sender=CashTransaciton)
-def _on_cash_transaction_post_save(sender, instance: CashTransaciton, **kwargs):
-    if instance.active:
-        if instance.src:
-            cache.delete(instance.src.id)
-        if instance.dst:
-            cache.delete(instance.dst.id)
-
-
-if settings.DEBUG:
-    cache.clear()

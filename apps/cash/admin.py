@@ -1,14 +1,7 @@
 from django.contrib import admin
 
-from api.models import EUser, CashTransaciton
-
-
 # Register your models here.
-
-
-@admin.register(EUser)
-class AuthorAdmin(admin.ModelAdmin):
-    pass
+from apps.cash.models import CashTransaciton
 
 
 @admin.register(CashTransaciton)

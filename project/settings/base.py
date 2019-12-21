@@ -138,7 +138,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = 'static'
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # JSON_API_FORMAT_FIELD_NAMES = 'camelize'
 # JSON_API_FORMAT_TYPES = 'camelize'

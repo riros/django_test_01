@@ -18,3 +18,6 @@ Faker
 flake8
 tox
 coverage
+
+daphne
+Twisted[tls,http2]

@@ -1,3 +1,6 @@
+import os
+from project import BASE_DIR
+
 INTERNAL_IPS = ('127.0.0.1',)
 DEBUG = True
 ALLOWED_HOSTS = ['*']
@@ -14,8 +17,10 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['file'],
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'propagate': True,
         },
     },
 }
+
+# print('base dir:', BASE_DIR)

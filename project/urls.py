@@ -16,6 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include, url
+from django.conf.urls.static import static
+from django.conf import settings
+from django.views.generic import RedirectView
 
 from rest_framework import routers
 
@@ -28,13 +31,11 @@ router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'users', EUserViewSet)
 router.register(r'cashtransactions', CashTransactionViewSet)
 
-urlpatterns = [
-
-    url(r'^api-auth', include("rest_framework.urls")),
-    url(r'^', include(router.urls)),
-    path('admin/', admin.site.urls),
-]
-
+urlpatterns = [url(r'^api-auth', include("rest_framework.urls")),
+               url(r'^', include(router.urls)),
+               url(r'^favicon\.ico$', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),
+               path('admin/', admin.site.urls),
+               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 #
 # if settings.DEBUG:
 #     import debug_toolbar

@@ -5,7 +5,6 @@ django-filter
 #django-polymorphic==2.0.3
 djangorestframework
 markdown
-psycopg2
 
 # test
 factory-boy
@@ -21,3 +20,5 @@ coverage
 
 daphne
 Twisted[tls,http2]
+
+pyyaml

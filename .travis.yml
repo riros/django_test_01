@@ -1,0 +1,12 @@
+language: python
+matrix:
+  fast_finish: true
+
+script:
+  - flake8
+  - python ./manage.py test
+
+notifications:
+  email: false
+
+os: linux

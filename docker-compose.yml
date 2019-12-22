@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  upstream:
+    ports:
+      - "8000:8000"
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    working_dir: /opt/upstream
+    env_file:
+      - .env
+    entrypoint: sh /opt/upstream/docker-entrypoint.sh
+    container_name: docker_${PROJECT_PREFIX}_upstream
+    volumes:
+      - ./:/opt/upstream
+      - /tmp:/tmp

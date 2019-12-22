@@ -22,7 +22,7 @@ n | N)
 esac
 
 # setup dpendency
-pip install -r ./requirements/dev.txt
+pip install -r ./requirements.txt
 
 python manage.py makemigrations
 

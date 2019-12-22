@@ -23,12 +23,17 @@ PRODUCTION_PLATFORM_NODE = 'prodserver'
 # SECURITY WARNING: keep the secret key used in production secret!
 if platform.node() != PRODUCTION_PLATFORM_NODE:
     SECRET_KEY = 'dev'
+    DEBUG = True
 else:
     try:
         from .secret import SECRET_KEY
     except ImportError:
         raise Exception("Нужно определить секретный ключ secret.py ")
 INTERNAL_IPS = ('127.0.0.1',)
+
+FIXTURE_DIRS = (
+    os.path.join(BASE_DIR, 'fixtures'),
+)
 
 # DEBUG = platform.node() != PRODUCTION_PLATFORM_NODE
 

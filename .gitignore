@@ -106,3 +106,6 @@ static
 logs
 !logs/.keepme
 project/settings/dev.py
+
+
+!/docker/logs/.keepme

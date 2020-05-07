@@ -1,5 +1,5 @@
 # core
-Django==3.0.1
+Django==3.0.3
 #django-debug-toolbar==1.11
 django-filter
 #django-polymorphic==2.0.3

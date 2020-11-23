@@ -54,7 +54,7 @@ def _on_cash_transaction_pre_save(sender, instance: CashTransaciton, **kwargs):
         raise AssertionError(_(f"Not enough user ({instance.src.get_full_name()}) money"))
 
     if not instance.src and not instance.dst:
-        raise AssertionError(_(f"no src and no dst. Empty."))
+        raise AssertionError(_("no src and no dst. Empty."))
 
     instance.updated_at = now()
 

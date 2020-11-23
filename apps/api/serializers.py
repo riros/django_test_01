@@ -41,7 +41,7 @@ class CashTransactionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(_(f"Not enough user ({v_data.src.get_full_name()}) money"))
 
         if not v_data['src'] and not v_data['dst']:
-            raise serializers.ValidationError(_(f"no src and no dst. Empty."))
+            raise serializers.ValidationError(_("no src and no dst. Empty."))
 
     def create(self, v_data):
         self._check(v_data)
